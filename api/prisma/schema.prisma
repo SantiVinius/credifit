@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Empresa {
+  id                 String        @id @default(uuid()) @db.Uuid
+  cnpj               String        @unique
+  razaoSocial        String        @map("razao_social")
+  nomeRepresentante  String        @map("nome_representante")
+  cpfRepresentante   String        @unique @map("cpf_representante")
+  emailRepresentante String        @unique @map("email_representante")
+  senha              String
+  funcionarios       Funcionario[]
+
+  @@map("empresas")
+}
+
+model Funcionario {
+  id          String       @id @default(uuid()) @db.Uuid
+  idEmpresa   String       @map("id_empresa") @db.Uuid
+  nome        String
+  cpf         String       @unique
+  email       String       @unique
+  senha       String
+  salario     Float
+  emprestimos Emprestimo[]
+
+  empresa Empresa @relation(fields: [idEmpresa], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@map("funcionarios")
+}
+
+enum StatusAprovacao {
+  APROVADO
+  REJEITADO
+
+  @@map("status_aprovacao")
+}
+
+model Emprestimo {
+  id                 String          @id @default(uuid()) @db.Uuid
+  idFuncionario      String          @map("id_funcionario") @db.Uuid
+  valorSolicitado    Float           @map("valor_solicitado")
+  quantidadeParcelas Int             @map("quantidade_parcelas")
+  dataSolicitacao    DateTime        @default(now()) @map("data_solicitacao")
+  statusAprovacao    StatusAprovacao @map("status_aprovacao")
+  motivoRejeicao     String?         @map("motivo_rejeicao")
+  scoreUtilizado     Int             @map("score_utilizado")
+  parcelas           Parcela[]
+
+  funcionario Funcionario @relation(fields: [idFuncionario], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@map("emprestimos")
+}
+
+model Parcela {
+  id             String   @id @default(uuid()) @db.Uuid
+  idEmprestimo   String   @db.Uuid
+  numeroParcela  Int      @map("numero_parcela")
+  valor          Float
+  dataVencimento DateTime @map("data_vencimento")
+
+  emprestimo Emprestimo @relation(fields: [idEmprestimo], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("parcelas")
+}
