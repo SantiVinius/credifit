@@ -130,7 +130,7 @@ credifit/
 
 ### 1. Clone o repositório
 ```bash
-git clone https://github.com/seu-usuario/credifit.git
+git clone https://github.com/SantiVinius/credifit.git
 cd credifit
 ```
 
